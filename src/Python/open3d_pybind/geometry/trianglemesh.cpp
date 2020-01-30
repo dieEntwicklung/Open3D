@@ -67,6 +67,10 @@ void pybind_trianglemesh(py::module &m) {
                  })
             .def(py::self + py::self)
             .def(py::self += py::self)
+
+            .def("identically_colored_connected_components",
+                 &geometry::TriangleMesh::IdenticallyColoredConnectedComponents,
+                 "Function to compute colored connected components")
             .def("compute_triangle_normals",
                  &geometry::TriangleMesh::ComputeTriangleNormals,
                  "Function to compute triangle normals, usually called before "
