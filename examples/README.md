@@ -9,7 +9,7 @@ of identically colored connected components which is consisted from numbers of v
 2. Follow instructions on http://www.open3d.org/docs/release/compilation.html for your OS.
 ### How to launch examples
 1. For launching C++ example (solution) go to your **Build** path, then to `bin/example/` and launch
-`./solution` with a single argument which contains path to `test_mesh.ply` which is by default in `Open3D/examples/TestData/`
+`./solution` with a single argument which contains path to `test_mesh.ply` which is by default in `Open3D/examples/TestData/`  . Example( `./solution ../../../examples/TestData/test_mesh.ply`)
 The program creates `result.txt` file with connected components in the same folder where the program is.
 2. For launching Python example go to `Open3D/examples/Basic/` and launch `python solution.py` with no argumets, 
 because the path was hardcoded as relative path to `TestData`. The program creates `result.txt` file with connected components 
