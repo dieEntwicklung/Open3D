@@ -453,35 +453,65 @@ TEST(TriangleMesh, ComputeVertexNormals) {
     ExpectEQ(ref, tm.vertex_normals_);
 }
 
-TEST(TriangleMesh, ComputeAdjacencyList) {
-    // 4-sided pyramid with A as top vertex, bottom has two triangles
-    Eigen::Vector3d A(0, 0, 1);    // 0
-    Eigen::Vector3d B(1, 1, 0);    // 1
-    Eigen::Vector3d C(-1, 1, 0);   // 2
-    Eigen::Vector3d D(-1, -1, 0);  // 3
-    Eigen::Vector3d E(1, -1, 0);   // 4
-    std::vector<Eigen::Vector3d> vertices{A, B, C, D, E};
-
+TEST(TriangleMesh, IdenticallyColoredConnectedComponents) {
     geometry::TriangleMesh tm;
-    tm.vertices_.insert(tm.vertices_.end(), std::begin(vertices),
-                        std::end(vertices));
-    tm.triangles_ = {Eigen::Vector3i(0, 1, 2), Eigen::Vector3i(0, 2, 3),
-                     Eigen::Vector3i(0, 3, 4), Eigen::Vector3i(0, 4, 1),
-                     Eigen::Vector3i(1, 2, 4), Eigen::Vector3i(2, 3, 4)};
-    EXPECT_FALSE(tm.HasAdjacencyList());
-    tm.ComputeAdjacencyList();
-    EXPECT_TRUE(tm.HasAdjacencyList());
 
-    // A
-    EXPECT_TRUE(tm.adjacency_list_[0] == std::unordered_set<int>({1, 2, 3, 4}));
-    // B
-    EXPECT_TRUE(tm.adjacency_list_[1] == std::unordered_set<int>({0, 2, 4}));
-    // C
-    EXPECT_TRUE(tm.adjacency_list_[2] == std::unordered_set<int>({0, 1, 3, 4}));
-    // D
-    EXPECT_TRUE(tm.adjacency_list_[3] == std::unordered_set<int>({0, 2, 4}));
-    // E
-    EXPECT_TRUE(tm.adjacency_list_[4] == std::unordered_set<int>({0, 1, 2, 3}));
+    tm.vertex_colors_ = {Eigen::Vector3d(1, 0, 0), Eigen::Vector3d(1, 0, 0),
+                         Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(0, 0, 1),
+                         Eigen::Vector3d(0, 1, 0), Eigen::Vector3d(1, 0, 0),
+                         Eigen::Vector3d(1, 0, 0)};
+
+    tm.adjacency_list_.clear();
+    tm.adjacency_list_.resize(tm.vertex_colors_.size());
+    tm.adjacency_list_[0] = {1,2,3};
+    tm.adjacency_list_[1] = {0,3,4};
+    tm.adjacency_list_[2] = {0,3,5};
+    tm.adjacency_list_[3] = {0,1,2,4,5,6};
+    tm.adjacency_list_[4] = {1,3,6};
+    tm.adjacency_list_[5] = {2,3,6};
+    tm.adjacency_list_[6] = {3,4,5};
+
+    tm.vertices_.resize(tm.vertex_colors_.size());
+
+    EXPECT_TRUE(tm.HasAdjacencyList());
+    std::vector<std::vector<int>> res = tm.IdenticallyColoredConnectedComponents();
+    EXPECT_TRUE(res.size() == 4);
+
+    EXPECT_TRUE(res[0] == std::vector<int>({0,1}));
+    EXPECT_TRUE(res[1] == std::vector<int>({2,3}));
+    EXPECT_TRUE(res[2] == std::vector<int>({4}));
+    EXPECT_TRUE(res[3] == std::vector<int>({5,6}));
+}
+
+TEST(TriangleMesh, ComputeAdjacencyList) {
+// 4-sided pyramid with A as top vertex, bottom has two triangles
+Eigen::Vector3d A(0, 0, 1);    // 0
+Eigen::Vector3d B(1, 1, 0);    // 1
+Eigen::Vector3d C(-1, 1, 0);   // 2
+Eigen::Vector3d D(-1, -1, 0);  // 3
+Eigen::Vector3d E(1, -1, 0);   // 4
+std::vector<Eigen::Vector3d> vertices{A, B, C, D, E};
+
+geometry::TriangleMesh tm;
+tm.vertices_.insert(tm.vertices_.end(), std::begin(vertices),
+        std::end(vertices));
+tm.triangles_ = {Eigen::Vector3i(0, 1, 2), Eigen::Vector3i(0, 2, 3),
+                 Eigen::Vector3i(0, 3, 4), Eigen::Vector3i(0, 4, 1),
+                 Eigen::Vector3i(1, 2, 4), Eigen::Vector3i(2, 3, 4)};
+EXPECT_FALSE(tm.HasAdjacencyList());
+tm.ComputeAdjacencyList();
+EXPECT_TRUE(tm.HasAdjacencyList());
+
+// A
+EXPECT_TRUE(tm.adjacency_list_[0] == std::unordered_set<int>({1, 2, 3, 4}));
+// B
+EXPECT_TRUE(tm.adjacency_list_[1] == std::unordered_set<int>({0, 2, 4}));
+// C
+EXPECT_TRUE(tm.adjacency_list_[2] == std::unordered_set<int>({0, 1, 3, 4}));
+// D
+EXPECT_TRUE(tm.adjacency_list_[3] == std::unordered_set<int>({0, 2, 4}));
+// E
+EXPECT_TRUE(tm.adjacency_list_[4] == std::unordered_set<int>({0, 1, 2, 3}));
 }
 
 TEST(TriangleMesh, Purge) {
