@@ -33,6 +33,7 @@
 
 #include <Eigen/Dense>
 #include <numeric>
+#include <iostream>
 #include <queue>
 #include <random>
 #include <tuple>
@@ -102,6 +103,43 @@ TriangleMesh &TriangleMesh::operator+=(const TriangleMesh &mesh) {
 
 TriangleMesh TriangleMesh::operator+(const TriangleMesh &mesh) const {
     return (TriangleMesh(*this) += mesh);
+}
+
+
+std::vector<std::vector<int>> TriangleMesh::IdenticallyColoredConnectedComponents(){
+    std::vector<std::vector<int>> res;
+    if(!HasAdjacencyList())
+        ComputeAdjacencyList();
+    const int N = vertex_colors_.size();
+
+    std::vector<int> visited(N,0);
+    std::queue<int> que;
+    for(int i = 0;i<N;i++) {
+        if (visited[i]) continue;
+        visited[i] = 1;
+        que.push(i);
+
+        Eigen::Vector3d cur_color = vertex_colors_[i];
+        std::vector<int> vertices;
+        while (!que.empty()) {
+            int cur = que.front();
+            que.pop();
+            vertices.push_back(cur);
+
+            for (const auto node: adjacency_list_[cur]) {
+                if (!visited[node] && vertex_colors_[node].cwiseEqual(cur_color).count() == 3) {
+                    que.push(node);
+                    visited[node] = 1;
+                }
+            }
+        }
+        sort(begin(vertices), end(vertices));
+        res.push_back(move(vertices));
+    }
+    auto cmp = [](const std::vector<int>& c1, const std::vector<int>& c2)
+            {return c1[0]<c2[0];};
+    sort(begin(res),end(res),cmp);
+    return res;
 }
 
 TriangleMesh &TriangleMesh::ComputeTriangleNormals(

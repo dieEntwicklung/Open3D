@@ -92,6 +92,8 @@ public:
         }
         return *this;
     }
+    /// Function to find all Identically Colored Connected Components
+    std::vector<std::vector<int>> IdenticallyColoredConnectedComponents();
 
     /// Function to compute triangle normals, usually called before rendering
     TriangleMesh &ComputeTriangleNormals(bool normalized = true);
